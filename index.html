@@ -357,7 +357,6 @@
         { num: "05", title: "Serviço de Videomaker", includes: "Captação cinematográfica, edição dinâmica para redes sociais, color grading (Atendimento presencial exclusivo em Pernambuco)", timeframe: "Sob consulta (Diária/Projeto)", target: "Marcas que buscam posicionamento audiovisual de alto nível" }
       ];
 
-      // LISTA TAT-TIM AĠĠORNATA
       const team = [
         { name: "Allef Gabriel", role: "Direttur tal-Istrateġija", img: "https://ik.imagekit.io/k4ndt5inp/IMG_2051.JPG.jpeg" },
         { name: "Helton Guilherme", role: "Inġinier tal-Konverżjoni", img: "https://ik.imagekit.io/k4ndt5inp/IMG_2024.JPG.jpeg" },
@@ -519,15 +518,23 @@
             <section id="contacto" className="px-8 md:px-20 pb-32 max-w-5xl mx-auto">
               <div className="border-t border-[#0A0A0A]/10 pt-20">
                 <div className="grid md:grid-cols-2 gap-16">
-                  <div><h2 className="font-bigger text-[#0A0A0A] text-6xl md:text-8xl leading-[0.85] mb-6">PRONTO PARA <span className="text-[#CC1F1F]">ESCALAR?</span></h2><p className="text-[#0A0A0A]/60 text-lg leading-relaxed mb-8">Solicite um diagnóstico e descubra como a Engenharia Visual pode triplicar a sua conversão.</p>
-                  <div className="flex flex-col gap-4 mono text-sm text-[#0A0A0A]/80 tracking-widest"><p>ALPHAAGENCY0099@GMAIL.COM</p><p>+55 81 8861-6363</p></div></div>
+                  <div>
+                    <h2 className="font-bigger text-[#0A0A0A] text-6xl md:text-8xl leading-[0.85] mb-6">PRONTO PARA <span className="text-[#CC1F1F]">ESCALAR?</span></h2>
+                    <p className="text-[#0A0A0A]/60 text-lg leading-relaxed mb-8">Solicite um diagnóstico e descubra como a Engenharia Visual pode triplicar a sua conversão.</p>
+                    <div className="flex flex-col gap-4 mono text-sm text-[#0A0A0A]/80 tracking-widest">
+                      <p>ALPHAAGENCY0099@GMAIL.COM</p>
+                      <p>+55 81 8861-6363</p>
+                    </div>
+                  </div>
                   <div className="bg-[#0A0A0A] p-10 md:p-14 rounded-2xl shadow-2xl">
                     
-                    {/* Alterações do Formulário começam aqui */}
+                    {/* ===== FORMULÁRIO 100% CONFIGURADO ===== */}
                     <form className="space-y-8" action="https://formsubmit.co/alphaagency0099@gmail.com" method="POST">
-                      {/* Campos ocultos do FormSubmit para melhorar a experiência do utilizador */}
                       <input type="hidden" name="_subject" value="Novo Lead - BLEND Assessoria!" />
                       <input type="hidden" name="_captcha" value="false" />
+                      <input type="hidden" name="_template" value="box" />
+                      {/* O React vai preencher este valor automaticamente com o link do Vercel onde o site estiver alojado */}
+                      <input type="hidden" name="_next" value={typeof window !== 'undefined' ? window.location.href : ''} />
                       
                       <div>
                         <label className="mono text-[10px] uppercase tracking-widest text-[#F8F5F0]/40 block mb-1">O seu Nome</label>
@@ -547,8 +554,6 @@
                       </div>
                       <button type="submit" className="btn-primary w-full py-5 mt-4 text-base uppercase">Solicitar Diagnóstico</button>
                     </form>
-                    {/* Alterações do Formulário terminam aqui */}
-
                   </div>
                 </div>
               </div>
@@ -558,9 +563,14 @@
           <footer className="bg-[#0A0A0A] pt-20 pb-10 px-8 md:px-20 text-[#F8F5F0]">
             <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10 border-b border-[#F8F5F0]/10 pb-12 mb-8">
               <a href="#" className="flex items-center"><img src="https://ik.imagekit.io/k4ndt5inp/9.png" alt="Logotipo BLEND" className="h-14 w-auto object-contain rounded-xl" /></a>
-              <div className="flex flex-wrap justify-center gap-8 mono text-xs uppercase tracking-widest text-[#F8F5F0]/50"><a href="https://instagram.com/blendcompany.br" target="_blank" className="hover:text-[#CC1F1F] transition-colors">@blendcompany.br</a></div>
+              <div className="flex flex-wrap justify-center gap-8 mono text-xs uppercase tracking-widest text-[#F8F5F0]/50">
+                <a href="https://instagram.com/blendcompany.br" target="_blank" className="hover:text-[#CC1F1F] transition-colors">@blendcompany.br</a>
+              </div>
             </div>
-            <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-[#F8F5F0]/30 mono text-[10px] tracking-widest uppercase"><p>© 2024 BLEND ASSESSORIA ESTRATÉGICA.</p><p className="mt-4 md:mt-0">DESIGN DE ALTA CONVERSÃO</p></div>
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-[#F8F5F0]/30 mono text-[10px] tracking-widest uppercase">
+              <p>© 2024 BLEND ASSESSORIA ESTRATÉGICA.</p>
+              <p className="mt-4 md:mt-0">DESIGN DE ALTA CONVERSÃO</p>
+            </div>
           </footer>
         </div>
       );
