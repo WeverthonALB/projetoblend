@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BLEND Assessoria — Engenharia Visual de Alta Conversão</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- GSAP & ScrollTrigger para as transições estilo Editorial -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  
+  <!-- OGL (necessário para o efeito LightRays) -->
+  <script src="https://unpkg.com/ogl/dist/ogl.umd.js"></script>
+
+  <!-- Matter.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+
+  <!-- Three.js (Necessário para o fundo Studio) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Syne:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --red-bright: #CC1F1F;
+      --red-dark: #991717;
+      --dark-bg: #0A0A0A;
+      --dark-card: #1A1A1A;
+      --cream: #F8F5F0;
+      
+      --border-light: rgba(248, 245, 240, 0.1);
+      --border-dark: rgba(10, 10, 10, 0.1);
+    }
+    
+    body {
+      background: var(--dark-bg);
+      color: var(--cream);
+      font-family: 'Syne', sans-serif;
+      margin: 0;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .font-bigger {
+      font-family: 'Anton', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    
+    .font-growth {
+      font-family: 'Bebas Neue', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .mono { font-family: 'DM Mono', monospace; }
+
+    .btn-primary {
+      background: var(--red-bright);
+      color: var(--cream);
+      padding: 1rem 2rem;
+      font-weight: 700;
+      font-size: 0.875rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: 100px;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border: 1px solid var(--red-bright);
+    }
+    .btn-primary:hover {
+      background: var(--red-dark);
+      border-color: var(--red-dark);
+    }
+
+    .btn-dark {
+      background: var(--dark-bg);
+      color: var(--cream);
+      padding: 1rem 2rem;
+      font-weight: 700;
+      font-size: 0.875rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: 100px;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-dark:hover {
+      background: #000;
+      transform: scale(1.02);
+    }
+
+    .input-field {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid var(--border-light);
+      padding: 1rem 0;
+      color: var(--cream);
+      width: 100%;
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem;
+      transition: border-color 0.3s;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: var(--red-bright);
+    }
+    .input-field::placeholder { color: rgba(248, 245, 240, 0.3); }
+    
+    .tag-mono {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 1rem;
+      border: 1px solid var(--border-light);
+      color: var(--cream);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-radius: 100px;
+    }
+    .tag-mono.dark-theme {
+      border: 1px solid var(--border-dark);
+      color: var(--dark-bg);
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .animate-marquee {
+      display: flex;
+      width: max-content;
+      animation: marquee 35s linear infinite;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--dark-bg); }
+    ::-webkit-scrollbar-thumb { background: var(--dark-card); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--red-dark); }
+
+    .light-rays-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .team-card-image {
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .group:hover .team-card-image {
+      transform: scale(1.05);
+    }
+
+    .scroll-float-container {
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: top;
+    }
+    .scroll-float-char {
+      display: inline-block;
+      will-change: transform, opacity;
+    }
+
+    .risk-card {
+      background: #fdfdfd;
+      border: 1px solid rgba(0,0,0,0.05);
+      border-radius: 24px;
+      padding: 2rem;
+      transition: all 0.3s ease;
+    }
+    .risk-card:hover {
+      background: #fff;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.03);
+      border-color: var(--red-bright);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useRef, useState } = React;
+
+    const ArrowRight = ({ className = "" }) => (
+      <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+    );
+
+    // =========================================
+    // COMPONENTE: SCROLL FLOAT ANIMATION
+    // =========================================
+    const ScrollFloat = ({ children, className = "" }) => {
+      const containerRef = useRef(null);
+      useEffect(() => {
+        if (!containerRef.current) return;
+        const chars = containerRef.current.querySelectorAll('.scroll-float-char');
+        gsap.fromTo(chars, 
+          { y: "110%", opacity: 0, rotateX: -40 }, 
+          { y: "0%", opacity: 1, rotateX: 0, duration: 1.2, stagger: 0.03, ease: "power4.out", scrollTrigger: { trigger: containerRef.current, start: "top 85%", toggleActions: "play none none reverse" } }
+        );
+      }, [children]);
+      const renderText = () => {
+        if (typeof children !== 'string') return children;
+        return children.split(" ").map((word, wIdx) => (
+          <span key={wIdx} className="inline-block whitespace-nowrap mr-[0.2em]">
+            {word.split("").map((char, cIdx) => (
+              <span key={cIdx} className="scroll-float-container"><span className="scroll-float-char inline-block">{char}</span></span>
+            ))}
+          </span>
+        ));
+      };
+      return <div ref={containerRef} className={className} style={{ perspective: '1000px' }}>{renderText()}</div>;
+    };
+
+    // =========================================
+    // COMPONENTE: STUDIO BACKGROUND
+    // =========================================
+    const hexToNormalizedRGB = (hex) => {
+      hex = hex.replace('#', '');
+      return [parseInt(hex.slice(0, 2), 16) / 255, parseInt(hex.slice(2, 4), 16) / 255, parseInt(hex.slice(4, 6), 16) / 255];
+    };
+
+    const studioVertexShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+    const studioFragmentShader = `
+      precision highp float;
+      varying vec2 vUv;
+      uniform float uTime;
+      uniform vec3 uColor1; uniform vec3 uColor2; uniform vec3 uColor3; uniform vec3 uColor4; 
+      vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
+      float snoise(vec2 v){
+        const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+        vec2 i  = floor(v + dot(v, C.yy) );
+        vec2 x0 = v -   i + dot(i, C.xx);
+        vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+        vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1;
+        i = mod(i, 289.0);
+        vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+        vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+        m = m*m*m*m;
+        vec3 x = 2.0 * fract(p * C.www) - 1.0; vec3 h = abs(x) - 0.5; vec3 ox = floor(x + 0.5); vec3 a0 = x - ox;
+        m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+        vec3 g; g.x = a0.x * x0.x + h.x * x0.y; g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+        return 130.0 * dot(m, g);
+      }
+      void main() {
+        vec2 uv = vUv; float time = uTime * 0.15;
+        vec2 p1 = uv + vec2(time * 0.5, time * 0.2); vec2 p2 = uv + vec2(-time * 0.4, time * 0.6); vec2 p3 = uv + vec2(time * 0.3, -time * 0.5);
+        float n1 = snoise(p1 * 2.5); float n2 = snoise(p2 * 3.5); float n3 = snoise(p3 * 4.5);
+        vec3 color = mix(uColor1, uColor2, n1 * 0.5 + 0.5); color = mix(color, uColor3, n2 * 0.5 + 0.5); color = mix(color, uColor4, n3 * 0.5 + 0.5);
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `;
+
+    const StudioBackground = ({ color1 = '#0A0A0A', color2 = '#CC1F1F', color3 = '#991717', color4 = '#1A1A1A', speed = 1 }) => {
+      const mountRef = useRef(null);
+      useEffect(() => {
+        if (!mountRef.current || !window.THREE) return;
+        const scene = new window.THREE.Scene();
+        const camera = new window.THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const renderer = new window.THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+        mountRef.current.appendChild(renderer.domElement);
+        const uniforms = { uTime: { value: 0 }, uColor1: { value: new window.THREE.Color(...hexToNormalizedRGB(color1)) }, uColor2: { value: new window.THREE.Color(...hexToNormalizedRGB(color2)) }, uColor3: { value: new window.THREE.Color(...hexToNormalizedRGB(color3)) }, uColor4: { value: new window.THREE.Color(...hexToNormalizedRGB(color4)) } };
+        const material = new window.THREE.ShaderMaterial({ vertexShader: studioVertexShader, fragmentShader: studioFragmentShader, uniforms, transparent: true });
+        const mesh = new window.THREE.Mesh(new window.THREE.PlaneGeometry(2, 2), material);
+        scene.add(mesh);
+        let raf; const clock = new window.THREE.Clock();
+        const animate = () => { raf = requestAnimationFrame(animate); material.uniforms.uTime.value += speed * clock.getDelta(); renderer.render(scene, camera); };
+        animate();
+        return () => { cancelAnimationFrame(raf); if (mountRef.current) mountRef.current.innerHTML = ''; renderer.dispose(); };
+      }, [color1, color2, color3, color4, speed]);
+      return <div ref={mountRef} className="absolute inset-0 z-0 opacity-80 pointer-events-none" />;
+    };
+
+    // =========================================
+    // COMPONENTE: LIGHT RAYS
+    // =========================================
+    const LightRays = ({ raysSpeed = 1, rayLength = 2, pulsating = false, fadeDistance = 1.0, saturation = 1.0, mouseInfluence = 0.1, noiseAmount = 0.0, distortion = 0.0, className = '' }) => {
+      const containerRef = useRef(null);
+      useEffect(() => {
+        const ogl = window.ogl || window.OGL; if (!ogl || !containerRef.current) return;
+        const { Renderer, Program, Triangle, Mesh } = ogl;
+        const renderer = new Renderer({ dpr: 2, alpha: true }); const gl = renderer.gl; containerRef.current.appendChild(gl.canvas);
+        const frag = `precision highp float; uniform float iTime; uniform vec2 iResolution; uniform vec2 rayPos; uniform vec2 rayDir; uniform vec3 raysColor; uniform float raysSpeed; uniform float lightSpread; uniform float rayLength; uniform float pulsating; uniform float fadeDistance; uniform float saturation; uniform vec2 mousePos; uniform float mouseInfluence; uniform float noiseAmount; uniform float distortion; varying vec2 vUv; float noise(vec2 st) { return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123); }
+          float rayStrength(vec2 raySource, vec2 rayRefDirection, vec2 coord, float seedA, float seedB, float speed) {
+            vec2 sourceToCoord = coord - raySource; vec2 dirNorm = normalize(sourceToCoord); float cosAngle = dot(dirNorm, rayRefDirection); float distAngle = cosAngle + distortion * sin(iTime * 2.0 + length(sourceToCoord) * 0.01) * 0.2; float spreadFactor = pow(max(distAngle, 0.0), 1.0 / max(lightSpread, 0.001)); float distance = length(sourceToCoord); float maxDist = iResolution.x * rayLength; float falloff = clamp((maxDist - distance) / maxDist, 0.0, 1.0); float pulse = pulsating > 0.5 ? (0.8 + 0.2 * sin(iTime * speed * 3.0)) : 1.0; float base = clamp((0.45 + 0.15 * sin(distAngle * seedA + iTime * speed)) + (0.3 + 0.2 * cos(-distAngle * seedB + iTime * speed)), 0.0, 1.0); return base * falloff * spreadFactor * pulse;
+          }
+          void main() { vec2 coord = vec2(gl_FragCoord.x, iResolution.y - gl_FragCoord.y); vec2 dir = rayDir; vec4 r1 = vec4(1.0) * rayStrength(rayPos, dir, coord, 36.2214, 21.11349, 1.5 * raysSpeed); vec4 r2 = vec4(1.0) * rayStrength(rayPos, dir, coord, 22.3991, 18.0234, 1.1 * raysSpeed); gl_FragColor = (r1 * 0.5 + r2 * 0.4) * vec4(raysColor, 1.0); }`;
+        const program = new Program(gl, { vertex: `attribute vec2 position; void main() { gl_Position = vec4(position, 0.0, 1.0); }`, fragment: frag, uniforms: { iTime: { value: 0 }, iResolution: { value: [gl.canvas.width, gl.canvas.height] }, rayPos: { value: [gl.canvas.width/2, 0] }, rayDir: { value: [0, 1] }, raysColor: { value: [0.8, 0.12, 0.12] }, raysSpeed: { value: raysSpeed }, lightSpread: { value: 1.0 }, rayLength: { value: rayLength }, pulsating: { value: pulsating ? 1 : 0 }, fadeDistance: { value: fadeDistance }, saturation: { value: saturation }, mousePos: { value: [0.5, 0.5] }, mouseInfluence: { value: mouseInfluence }, noiseAmount: { value: noiseAmount }, distortion: { value: distortion } } });
+        const mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
+        let raf; const loop = t => { raf = requestAnimationFrame(loop); program.uniforms.iTime.value = t * 0.001; renderer.render({ scene: mesh }); }; raf = requestAnimationFrame(loop);
+        const resize = () => { renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight); program.uniforms.iResolution.value = [gl.canvas.width, gl.canvas.height]; program.uniforms.rayPos.value = [gl.canvas.width/2, 0]; }; window.addEventListener('resize', resize); resize();
+        return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); if (containerRef.current) containerRef.current.innerHTML = ''; };
+      }, []);
+      return <div ref={containerRef} className={`light-rays-container ${className}`.trim()} />;
+    };
+
+    // =========================================
+    // APP PRINCIPAL
+    // =========================================
+    const App = () => {
+      const heroRef = useRef(null); const tabletRef = useRef(null); const methodologyRef = useRef(null); const servicesRef = useRef(null);
+      const aboutRef = useRef(null); const statsRef = useRef(null);
+      const [logoExpanded, setLogoExpanded] = useState(false); const [activeTab, setActiveTab] = useState(''); const [activeService, setActiveService] = useState(0);
+
+      const handleNavClick = (tab) => {
+        setActiveTab(tab);
+        if (tab === 'DESIGN') methodologyRef.current?.scrollIntoView({ behavior: 'smooth' });
+        else if (tab === 'ESTRATÉGIA') servicesRef.current?.scrollIntoView({ behavior: 'smooth' });
+        else if (tab === 'QUEM SOMOS') aboutRef.current?.scrollIntoView({ behavior: 'smooth' });
+        else if (tab === 'CONVERSÃO') document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
+      };
+
+      useEffect(() => {
+        gsap.registerPlugin(ScrollTrigger);
+        let ctx = gsap.context(() => {
+          gsap.timeline({ scrollTrigger: { trigger: heroRef.current, start: "top top", end: "+=100vh", scrub: 1, pin: true } }).to(".text-blend", { scale: 1.1, opacity: 0 }, 0);
+          gsap.timeline({ scrollTrigger: { trigger: methodologyRef.current, start: "top 80%" } }).fromTo(tabletRef.current, { y: 200, opacity: 0, rotateX: 45 }, { y: 0, opacity: 1, rotateX: 10, duration: 2 });
+          const counters = document.querySelectorAll(".stat-number");
+          counters.forEach(counter => {
+            const target = parseInt(counter.getAttribute("data-target"));
+            gsap.fromTo(counter, { innerText: 0 }, { innerText: target, duration: 2.5, ease: "power2.out", scrollTrigger: { trigger: statsRef.current, start: "top 90%" }, snap: { innerText: 1 }, onUpdate: function() { counter.innerText = Math.ceil(this.targets()[0].innerText); } });
+          });
+        });
+        return () => ctx.revert();
+      }, []);
+
+      const services = [
+        { num: "01", title: "Assessoria Estratégica Completa", includes: "Mapeamento de ICP, funil de conversão, design + copy + analytics", timeframe: "Projeto contínuo, mínimo 3 meses", target: "Empresas que querem escalar com previsibilidade" },
+        { num: "02", title: "Landing Pages de Alta Conversão", includes: "Arquitetura de CTA, copywriting neuro-persuasivo, integração com CRM", timeframe: "2–3 semanas", target: "Infoprodutores, SaaS, serviços de ticket alto" },
+        { num: "03", title: "Gestão de Tráfego", includes: "Gestão avançada de campanhas (Meta & Google Ads), otimização de conversão, análise de métricas e ROI", timeframe: "Contrato mensal", target: "Empresas que precisam de aquisição previsível de clientes" },
+        { num: "04", title: "Identidade Visual Premium", includes: "Logo, paleta, tipografia, brandbook digital", timeframe: "3–4 semanas", target: "Empresas em fase de reposicionamento ou lançamento" },
+        { num: "05", title: "Serviço de Videomaker", includes: "Captação cinematográfica, edição dinâmica para redes sociais, color grading (Atendimento presencial exclusivo em Pernambuco)", timeframe: "Sob consulta (Diária/Projeto)", target: "Marcas que buscam posicionamento audiovisual de alto nível" }
+      ];
+
+      // LISTA TAT-TIM AĠĠORNATA
+      const team = [
+        { name: "Allef Gabriel", role: "Direttur tal-Istrateġija", img: "https://ik.imagekit.io/k4ndt5inp/IMG_2051.JPG.jpeg" },
+        { name: "Helton Guilherme", role: "Inġinier tal-Konverżjoni", img: "https://ik.imagekit.io/k4ndt5inp/IMG_2024.JPG.jpeg" },
+        { name: "Wéverthon Alberto", role: "Kittieb Kreattiv", img: "https://ik.imagekit.io/k4ndt5inp/IMG_2030.JPG.jpeg" }
+      ];
+
+      const marqueeItems = ["STAAGE", "FERNANDO MIRANDA", "ALLEF GABRIEL", "HELTON GUILHERME", "WÉVERTHON ALBERTO", "BLEND"];
+
+      return (
+        <div className="w-full bg-[#0A0A0A]">
+          <header className="fixed top-0 w-full z-50 px-8 py-6 flex justify-between items-center mix-blend-difference pointer-events-none">
+            <div className="pointer-events-auto flex items-center cursor-pointer" onClick={() => setLogoExpanded(!logoExpanded)}>
+              <img src="https://ik.imagekit.io/k4ndt5inp/9.png" alt="Logo" className="h-10 w-auto object-contain relative z-10 rounded-xl" />
+              <div className={`overflow-hidden transition-all duration-500 flex items-center ${logoExpanded ? 'max-w-[150px] opacity-100 ml-4' : 'max-w-0 opacity-0'}`}><span className="font-bigger text-2xl text-[#F8F5F0] tracking-widest">BLEND</span></div>
+            </div>
+            <div className="hidden md:flex gap-8 mono text-xs tracking-widest text-[#F8F5F0] pointer-events-auto">
+              {['DESIGN', 'ESTRATÉGIA', 'QUEM SOMOS', 'CONVERSÃO'].map((tab) => (
+                <div key={tab} onClick={() => handleNavClick(tab)} className="relative cursor-pointer group py-2">
+                  <span className={`transition-colors duration-300 ${activeTab === tab ? 'text-[#F8F5F0]' : 'text-[#F8F5F0]/50 group-hover:text-[#F8F5F0]'}`}>{tab}</span>
+                  <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] bg-[#F8F5F0] transition-all duration-300 ${activeTab === tab ? 'w-full opacity-100' : 'w-0 opacity-0 group-hover:w-1/2'}`} />
+                </div>
+              ))}
+            </div>
+            <a href="#contacto" className="mono text-[10px] tracking-widest border border-[#F8F5F0]/20 rounded-full px-6 py-2 text-[#F8F5F0] hover:bg-[#F8F5F0] hover:text-[#0A0A0A] transition-colors pointer-events-auto uppercase">Iniciar Projeto</a>
+          </header>
+
+          <div ref={heroRef} className="relative w-full h-screen bg-[#0A0A0A] flex flex-col items-center justify-center overflow-hidden">
+            <StudioBackground speed={1.5} color1="#0A0A0A" color2="#CC1F1F" color3="#500b0b" color4="#1A1A1A" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0A0A0A] z-0 pointer-events-none" />
+            <LightRays raysOrigin="top-center" raysColor="#CC1F1F" raysSpeed={1.2} mouseInfluence={0.15} distortion={0.1} pulsating={true} fadeDistance={0.8} />
+            <div className="hero-eyebrow absolute top-32 uppercase tracking-[0.3em] text-[10px] md:text-xs text-[#F8F5F0]/50 text-center z-10">Assessoria Estratégica · Design de Alta Conversão</div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full flex justify-center px-6 pointer-events-none z-10">
+              <span className="text-blend font-bigger text-[#F8F5F0] text-[26vw] leading-none tracking-tighter text-center" style={{ textShadow: "0px 10px 40px rgba(0,0,0,0.8)" }}>BLEND</span>
+            </div>
+            <div className="hero-footer absolute bottom-12 w-full px-8 md:px-20 flex flex-col md:flex-row justify-between items-end md:items-center z-10">
+              <div className="max-w-sm mb-6 md:mb-0"><p className="text-[#F8F5F0]/60 text-sm leading-relaxed font-light">Transformamos visitantes em clientes premium através de Engenharia Visual e estratégia de conversão.</p></div>
+              <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <a href="#contacto" className="btn-primary">Diagnóstico Gratuito</a>
+                <div className="flex items-center gap-3 mt-4 sm:mt-0"><div className="w-10 h-10 rounded-full border border-[#F8F5F0]/20 flex items-center justify-center animate-bounce"><svg className="text-[#F8F5F0]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div><span className="mono text-[8px] text-[#F8F5F0]/50 tracking-[0.2em] uppercase">Deslize para<br/>explorar</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative z-20 bg-[#F8F5F0] rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+            <section ref={methodologyRef} className="px-8 md:px-20 pt-32 pb-20 max-w-7xl mx-auto overflow-hidden md:overflow-visible">
+              <div className="flex flex-col items-center md:items-start text-center md:text-left relative z-10">
+                <div className="tag-mono dark-theme mb-6">A Nossa Metodologia</div>
+                <ScrollFloat className="font-bigger text-[#0A0A0A] text-6xl md:text-[8rem] leading-[1.1]">DESIGN QUE VENDE</ScrollFloat>
+                <ScrollFloat className="font-bigger text-[#CC1F1F] text-6xl md:text-[8rem] leading-[1.1]">ESTRATÉGIA QUE ESCALA</ScrollFloat>
+              </div>
+              <div className="w-full flex justify-center mt-32 mb-10 z-20 pointer-events-none" style={{ perspective: '3000px' }}>
+                <div ref={tabletRef} className="relative w-[85vw] max-w-[700px] aspect-[4/3] md:aspect-[16/11]" style={{ transformStyle: 'preserve-3d' }}>
+                  <div className="absolute top-[70%] left-[5%] w-[90%] h-32 bg-black/60 blur-3xl rounded-[100%]" style={{ transform: 'translateY(0px) translateZ(-400px)' }}></div>
+                  <div className="absolute inset-0 bg-[#222] rounded-[32px] md:rounded-[48px]" style={{ transform: 'translateZ(-4px)' }}></div>
+                  <div className="absolute inset-0 bg-[#1a1a1a] rounded-[32px] md:rounded-[48px]" style={{ transform: 'translateZ(-2px)' }}></div>
+                  <div className="absolute inset-0 bg-gradient-to-tr from-[#111] to-[#1f1f1f] rounded-[32px] md:rounded-[48px] border border-[#333] flex items-center justify-center" style={{ transform: 'translateZ(-6px) rotateY(180deg)', backfaceVisibility: 'hidden' }}><div className="text-[#F8F5F0] font-bigger text-6xl md:text-8xl opacity-40 tracking-widest" style={{ transform: 'scaleX(-1)' }}>BLEND</div></div>
+                  <div className="absolute inset-0 bg-[#0a0a0a] rounded-[32px] md:rounded-[48px] border border-[#333] p-3 md:p-5" style={{ backfaceVisibility: 'hidden', transform: 'translateZ(0px)', transformStyle: 'preserve-3d' }}>
+                    <div className="relative w-full h-full bg-black rounded-[20px] md:rounded-[32px] overflow-hidden border border-[#1a1a1a] shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
+                      <img src="https://ik.imagekit.io/k4ndt5inp/BLEND%20WALLPAPER%20DESKTOP.png" alt="Wallpaper" className="w-full h-full object-cover opacity-95 rounded-[20px] md:rounded-[32px]" />
+                      <div className="screen-glare absolute inset-0 bg-gradient-to-tr from-transparent via-[rgba(255,255,255,0.15)] to-transparent skew-x-12 origin-left pointer-events-none w-[150%]"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-8 border-t border-[#0A0A0A]/10 pt-12">
+                <div className="col-span-1 flex flex-col gap-2"><span className="mono text-[#CC1F1F] text-xs font-bold tracking-widest">01 / ESTRATÉGIA</span><h3 className="font-growth text-3xl text-[#0A0A0A] mt-2 uppercase text-balance leading-tight">Diagnóstico</h3><p className="text-[#0A0A0A]/60 text-sm leading-relaxed">Mapeamos o comportamento do seu cliente ideal para criar jornadas de conversão sem atritos.</p></div>
+                <div className="col-span-1 flex flex-col gap-2"><span className="mono text-[#CC1F1F] text-xs font-bold tracking-widest">02 / UX & UI</span><h3 className="font-growth text-3xl text-[#0A0A0A] mt-2 uppercase text-balance leading-tight">Arquitetura</h3><p className="text-[#0A0A0A]/60 text-sm leading-relaxed">Estruturas wireframe pensadas na retenção de atenção e eliminação de pontos de fuga.</p></div>
+                <div className="col-span-1 flex flex-col gap-2"><span className="mono text-[#CC1F1F] text-xs font-bold tracking-widest">03 / VISUAL</span><h3 className="font-growth text-3xl text-[#0A0A0A] mt-2 uppercase text-balance leading-tight">Direção de Arte</h3><p className="text-[#0A0A0A]/60 text-sm leading-relaxed">Identidade premium que justifica o seu ticket alto logo no primeiro impacto visual.</p></div>
+                <div className="col-span-1 flex flex-col items-start md:items-end justify-center"><a href="#contacto" className="btn-dark w-full md:w-auto mt-4 md:mt-0 uppercase">Agendar Sessão <ArrowRight /></a></div>
+              </div>
+            </section>
+
+            <div className="border-y border-[#0A0A0A]/10 py-10 overflow-hidden bg-[#F8F5F0]">
+              <div className="animate-marquee opacity-40 grayscale">
+                <div className="flex gap-16 items-center px-8">{marqueeItems.map((item, idx) => (<React.Fragment key={idx}><span className="font-growth text-[#0A0A0A] text-6xl tracking-widest whitespace-nowrap">{item}</span><span className="text-[#CC1F1F] text-2xl">•</span></React.Fragment>))}</div>
+                <div className="flex gap-16 items-center px-8">{marqueeItems.map((item, idx) => (<React.Fragment key={idx}><span className="font-growth text-[#0A0A0A] text-6xl tracking-widest whitespace-nowrap">{item}</span><span className="text-[#CC1F1F] text-2xl">•</span></React.Fragment>))}</div>
+              </div>
+            </div>
+
+            <section ref={aboutRef} className="px-8 md:px-20 py-32 max-w-7xl mx-auto">
+              <div className="grid md:grid-cols-12 gap-16 items-start">
+                <div className="md:col-span-5 flex flex-col gap-8">
+                  <div className="tag-mono dark-theme w-fit">Quem Somos</div>
+                  <ScrollFloat className="font-bigger text-[#0A0A0A] text-6xl leading-[1.1]">A ENGENHARIA POR TRÁS DO LUXO.</ScrollFloat>
+                  <div className="flex flex-col gap-6 text-[#0A0A0A]/70 text-lg leading-relaxed font-light">
+                    <p>A Blend nasceu da necessidade de unir a estética de marcas de luxo à precisão analítica do marketing de resposta direta. Nossa missão é posicionar empresas como líderes incontestáveis através de um design que impõe autoridade.</p>
+                    <p>Defendemos o conceito de <strong>Engenharia Visual</strong>: não criamos apenas "arte", construímos estruturas visuais onde cada pixel tem a função estratégica de guiar o olhar e acelerar a decisão de compra do seu cliente premium.</p>
+                    <p>Somos obcecados por resultados, não apenas por entregas. Nosso compromisso é com o ROI do seu negócio e com a construção de uma presença digital que justifica o seu ticket mais alto, eliminando a comparação por preço.</p>
+                  </div>
+                  <div ref={statsRef} className="grid grid-cols-3 gap-4 mt-8 border-t border-[#0A0A0A]/10 pt-12">
+                    <div className="flex flex-col"><span className="font-bigger text-5xl text-[#CC1F1F] flex items-center"><span className="stat-number" data-target="12">0</span></span><span className="mono text-[10px] uppercase tracking-widest text-[#0A0A0A]/40">Clientes Ativos</span></div>
+                    <div className="flex flex-col"><span className="font-bigger text-5xl text-[#CC1F1F] flex items-center"><span className="stat-number" data-target="47">0</span></span><span className="mono text-[10px] uppercase tracking-widest text-[#0A0A0A]/40">Projetos Entregues</span></div>
+                    <div className="flex flex-col"><span className="font-bigger text-5xl text-[#CC1F1F] flex items-center"><span className="stat-number" data-target="1">0</span></span><span className="mono text-[10px] uppercase tracking-widest text-[#0A0A0A]/40">Ano de Mercado</span></div>
+                  </div>
+                </div>
+                <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8">
+                  {team.map((member, i) => (
+                    <div key={i} className="group flex flex-col gap-4">
+                      <div className="relative aspect-[3/4] overflow-hidden rounded-3xl bg-[#1A1A1A]">
+                        <img src={member.img} alt={member.name} className="team-card-image w-full h-full object-cover grayscale group-hover:grayscale-0" />
+                      </div>
+                      <div className="flex flex-col"><h4 className="font-growth text-2xl text-[#0A0A0A] tracking-wide">{member.name}</h4><span className="mono text-[10px] uppercase tracking-widest text-[#0A0A0A]/50">{member.role}</span></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <section ref={servicesRef} className="px-8 md:px-20 py-32 max-w-7xl mx-auto border-t border-[#0A0A0A]/10">
+              <div className="text-center mb-20"><div className="tag-mono dark-theme mb-4">Soluções</div><ScrollFloat className="font-bigger text-[#0A0A0A] text-5xl md:text-7xl uppercase">O QUE ENTREGAMOS</ScrollFloat></div>
+              <div className="flex flex-col border-t border-[#0A0A0A]/10">
+                {services.map((s, i) => (
+                  <div key={i} className="border-b border-[#0A0A0A]/10 overflow-hidden">
+                    <button onClick={() => setActiveService(activeService === i ? -1 : i)} className="w-full py-8 md:py-12 flex items-center justify-between text-left group focus:outline-none">
+                      <div className="flex items-center gap-6 md:gap-12"><span className="mono text-[#CC1F1F] text-xl md:text-2xl font-bold">{s.num}</span><h3 className={`font-growth text-3xl md:text-4xl lg:text-5xl tracking-wide transition-colors ${activeService === i ? 'text-[#CC1F1F]' : 'text-[#0A0A0A] group-hover:text-[#CC1F1F]'}`}>{s.title}</h3></div>
+                      <div className={`transform transition-transform duration-300 text-[#0A0A0A] ${activeService === i ? 'rotate-45 text-[#CC1F1F]' : ''}`}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+                    </button>
+                    <div className={`transition-all duration-500 ease-in-out overflow-hidden ${activeService === i ? 'max-h-[800px] opacity-100 pb-12' : 'max-h-0 opacity-0'}`}>
+                      <div className="pl-0 md:pl-[88px] grid md:grid-cols-3 gap-8">
+                        <div className="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
+                          <div><span className="mono text-[10px] uppercase tracking-widest text-[#0A0A0A]/40 block mb-2">O que inclui</span><p className="text-[#0A0A0A]/80 text-sm leading-relaxed">{s.includes}</p></div>
+                          <div><span className="mono text-[10px] uppercase tracking-widest text-[#0A0A0A]/40 block mb-2">Para quem</span><p className="text-[#0A0A0A]/80 text-sm leading-relaxed">{s.target}</p></div>
+                          <div className="sm:col-span-2"><span className="mono text-[10px] uppercase tracking-widest text-[#0A0A0A]/40 block mb-2">Prazo médio</span><p className="text-[#0A0A0A]/80 text-sm leading-relaxed">{s.timeframe}</p></div>
+                        </div>
+                        <div className="flex items-start md:items-end justify-start md:justify-end"><a href="#contacto" className="btn-dark w-full md:w-auto text-center uppercase">Solicitar proposta <ArrowRight /></a></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="px-8 md:px-20 py-32 max-w-7xl mx-auto bg-white/50 border-t border-b border-black/5">
+              <div className="text-center mb-16">
+                <div className="tag-mono dark-theme mb-4">Aviso de Risco</div>
+                <ScrollFloat className="font-growth text-[#0A0A0A] text-4xl md:text-6xl tracking-widest uppercase">NÃO DEIXE A SUA MARCA DESABAR</ScrollFloat>
+                <p className="text-[#0A0A0A]/60 text-sm md:text-base mt-4 font-light max-w-2xl mx-auto">Uma fundação visual fraca afasta os seus melhores clientes. Se o seu design não comunica autoridade, você está pagando para perder dinheiro.</p>
+              </div>
+              
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="risk-card flex flex-col gap-4">
+                  <span className="font-bigger text-3xl text-[#CC1F1F]">01</span>
+                  <h4 className="font-growth text-2xl text-[#0A0A0A] uppercase tracking-wider">Perda Instantânea de Autoridade</h4>
+                  <p className="text-[#0A0A0A]/70 text-sm leading-relaxed">Clientes de alto ticket decidem em milissegundos. Um visual amador comunica um serviço amador, independentemente da sua real competência técnica.</p>
+                </div>
+                <div className="risk-card flex flex-col gap-4">
+                  <span className="font-bigger text-3xl text-[#CC1F1F]">02</span>
+                  <h4 className="font-growth text-2xl text-[#0A0A0A] uppercase tracking-wider">Guerra de Preços Infinita</h4>
+                  <p className="text-[#0A0A0A]/70 text-sm leading-relaxed">Sem diferenciação estética premium, você é visto como uma "commodity". Quando você não parece exclusivo, a única variável de escolha do cliente passa a ser o menor preço.</p>
+                </div>
+                <div className="risk-card flex flex-col gap-4">
+                  <span className="font-bigger text-3xl text-[#CC1F1F]">03</span>
+                  <h4 className="font-growth text-2xl text-[#0A0A0A] uppercase tracking-wider">Escala Ineficiente no Tráfego</h4>
+                  <p className="text-[#0A0A0A]/70 text-sm leading-relaxed">Você gasta milhares em anúncios, mas a sua página de destino não retém a atenção. Um design mal estruturado é um balde furado que drena o seu investimento em marketing.</p>
+                </div>
+              </div>
+            </section>
+
+            <section id="contacto" className="px-8 md:px-20 pb-32 max-w-5xl mx-auto">
+              <div className="border-t border-[#0A0A0A]/10 pt-20">
+                <div className="grid md:grid-cols-2 gap-16">
+                  <div><h2 className="font-bigger text-[#0A0A0A] text-6xl md:text-8xl leading-[0.85] mb-6">PRONTO PARA <span className="text-[#CC1F1F]">ESCALAR?</span></h2><p className="text-[#0A0A0A]/60 text-lg leading-relaxed mb-8">Solicite um diagnóstico e descubra como a Engenharia Visual pode triplicar a sua conversão.</p>
+                  <div className="flex flex-col gap-4 mono text-sm text-[#0A0A0A]/80 tracking-widest"><p>ALPHAAGENCY0099@GMAIL.COM</p><p>+55 81 8861-6363</p></div></div>
+                  <div className="bg-[#0A0A0A] p-10 md:p-14 rounded-2xl shadow-2xl">
+                    
+                    {/* Alterações do Formulário começam aqui */}
+                    <form className="space-y-8" action="https://formsubmit.co/alphaagency0099@gmail.com" method="POST">
+                      {/* Campos ocultos do FormSubmit para melhorar a experiência do utilizador */}
+                      <input type="hidden" name="_subject" value="Novo Lead - BLEND Assessoria!" />
+                      <input type="hidden" name="_captcha" value="false" />
+                      
+                      <div>
+                        <label className="mono text-[10px] uppercase tracking-widest text-[#F8F5F0]/40 block mb-1">O seu Nome</label>
+                        <input type="text" name="nome" className="input-field" placeholder="Ex: João Silva" required />
+                      </div>
+                      <div>
+                        <label className="mono text-[10px] uppercase tracking-widest text-[#F8F5F0]/40 block mb-1">E-mail de Trabalho</label>
+                        <input type="email" name="email" className="input-field" placeholder="joao@empresa.com" required />
+                      </div>
+                      <div>
+                        <label className="mono text-[10px] uppercase tracking-widest text-[#F8F5F0]/40 block mb-1">Telefone / WhatsApp</label>
+                        <input type="tel" name="telefone" className="input-field" placeholder="+55 81 8861-6363" required />
+                      </div>
+                      <div>
+                        <label className="mono text-[10px] uppercase tracking-widest text-[#F8F5F0]/40 block mb-1">Maior Desafio Atual</label>
+                        <input type="text" name="desafio" className="input-field" placeholder="Ex: Baixa taxa de conversão" required />
+                      </div>
+                      <button type="submit" className="btn-primary w-full py-5 mt-4 text-base uppercase">Solicitar Diagnóstico</button>
+                    </form>
+                    {/* Alterações do Formulário terminam aqui */}
+
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <footer className="bg-[#0A0A0A] pt-20 pb-10 px-8 md:px-20 text-[#F8F5F0]">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10 border-b border-[#F8F5F0]/10 pb-12 mb-8">
+              <a href="#" className="flex items-center"><img src="https://ik.imagekit.io/k4ndt5inp/9.png" alt="Logotipo BLEND" className="h-14 w-auto object-contain rounded-xl" /></a>
+              <div className="flex flex-wrap justify-center gap-8 mono text-xs uppercase tracking-widest text-[#F8F5F0]/50"><a href="https://instagram.com/blendcompany.br" target="_blank" className="hover:text-[#CC1F1F] transition-colors">@blendcompany.br</a></div>
+            </div>
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-[#F8F5F0]/30 mono text-[10px] tracking-widest uppercase"><p>© 2024 BLEND ASSESSORIA ESTRATÉGICA.</p><p className="mt-4 md:mt-0">DESIGN DE ALTA CONVERSÃO</p></div>
+          </footer>
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
