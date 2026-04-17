@@ -338,7 +338,30 @@
       useEffect(() => {
         gsap.registerPlugin(ScrollTrigger);
         let ctx = gsap.context(() => {
-          gsap.timeline({ scrollTrigger: { trigger: heroRef.current, start: "top top", end: "+=100vh", scrub: 1, pin: true } }).to(".text-blend", { scale: 1.1, opacity: 0 }, 0);
+          
+          // Animação Hero melhorada para mobile (aumenta o tempo antes do fade out)
+          const isMobile = window.innerWidth < 768;
+          const heroTl = gsap.timeline({ 
+            scrollTrigger: { 
+              trigger: heroRef.current, 
+              start: "top top", 
+              end: isMobile ? "+=150vh" : "+=100vh", // No mobile estende a rolagem por mais tempo
+              scrub: 1, 
+              pin: true 
+            } 
+          });
+          
+          // O zoom acontece para todos
+          heroTl.to(".text-blend", { scale: isMobile ? 1.2 : 1.1, duration: 1 }, 0);
+          
+          if (isMobile) {
+            // No mobile, a opacidade só começa a cair quando chegar a 60% da animação
+            heroTl.to(".text-blend", { opacity: 0, duration: 0.4 }, 0.6);
+          } else {
+            // No desktop, desaparece de forma gradual do início ao fim
+            heroTl.to(".text-blend", { opacity: 0, duration: 1 }, 0);
+          }
+
           gsap.timeline({ scrollTrigger: { trigger: methodologyRef.current, start: "top 80%" } }).fromTo(tabletRef.current, { y: 200, opacity: 0, rotateX: 45 }, { y: 0, opacity: 1, rotateX: 10, duration: 2 });
           const counters = document.querySelectorAll(".stat-number");
           counters.forEach(counter => {
